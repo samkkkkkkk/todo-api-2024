@@ -8,7 +8,7 @@ spring:
   application:
     name: todo
   datasource:
-    url: jdbc:mysql://localhost:3306/jpa?serverTimezone=Asia/Seoul
+    url: jdbc:mysql://localhost:3307/jpa?serverTimezone=Asia/Seoul
     username: spring
     password: spring
     driver-class-name: com.mysql.cj.jdbc.Driver
