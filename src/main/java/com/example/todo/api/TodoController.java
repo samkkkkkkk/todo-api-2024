@@ -1,6 +1,7 @@
 package com.example.todo.api;
 
 import com.example.todo.dto.request.TodoCreateRequestDTO;
+import com.example.todo.dto.request.TodoModifyRequestDTO;
 import com.example.todo.dto.response.TodoListResponseDTO;
 import com.example.todo.service.TodoService;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +65,45 @@ public class TodoController {
 
     }
 
+    // 할 일 삭제 요청
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteTodo(
+            @PathVariable("id") String todoId
+    ) {
+
+        log.info("/api/v1/todos/{} DELETE request!", todoId);
+        if (todoId == null || todoId.trim().equals("")) {
+            return ResponseEntity.badRequest().body("ID를 전달 해주세요.");
+        }
+
+        try {
+            TodoListResponseDTO responseDTO = todoService.delete(todoId);
+            return ResponseEntity.ok().body(responseDTO);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
+
+
+    // 할 일 수정하기
+    @PatchMapping
+    public ResponseEntity<?> updateTodo(
+            @Validated @RequestBody TodoModifyRequestDTO requestDTO,
+            BindingResult result
+    ) {
+        ResponseEntity<List<FieldError>> validatedResult = getValidatedResult(result);
+        if(validatedResult != null) return validatedResult;
+
+        try {
+            return ResponseEntity.ok().body(todoService.update(requestDTO));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(e.getMessage());
+        }
+
+    }
+
 
 
     // 입력값 검증(Validation)의 결과를 처리해 주는 전역 메서드
@@ -79,6 +119,8 @@ public class TodoController {
         }
         return null;
     }
+
+
 
 
 }

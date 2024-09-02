@@ -1,6 +1,7 @@
 package com.example.todo.service;
 
 import com.example.todo.dto.request.TodoCreateRequestDTO;
+import com.example.todo.dto.request.TodoModifyRequestDTO;
 import com.example.todo.dto.response.TodoDetailResponseDTO;
 import com.example.todo.dto.response.TodoListResponseDTO;
 import com.example.todo.entity.Todo;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,4 +50,32 @@ public class TodoService {
 
     }
 
+    
+    // 할 일 삭제
+    public TodoListResponseDTO delete(final String todoId) throws Exception {
+
+        todoRepository.findById(todoId).orElseThrow(
+                () -> {
+                    log.error("id가 존재하지 않아 삭제에 실패했습니다. - ID: {}", todoId);
+                    throw new RuntimeException("id가 존재하지 않아 삭제에 실패했습니다.");
+                }
+        );
+            todoRepository.deleteById(todoId);
+
+        return retrieve();
+    }
+
+
+    // 할 일 수정
+    public TodoListResponseDTO update(final TodoModifyRequestDTO requestDTO) throws Exception {
+        Optional<Todo> targetEntity
+                = todoRepository.findById(requestDTO.getId());
+
+        targetEntity.ifPresent(todo -> {
+            todo.setDone(requestDTO.isDone());
+            todoRepository.save(todo);
+        });
+
+        return retrieve();
+    }
 }
