@@ -1,6 +1,6 @@
-package com.example.todo.dto.request;
+package com.example.todo.todoapi.dto.request;
 
-import com.example.todo.entity.Todo;
+import com.example.todo.todoapi.entity.Todo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;

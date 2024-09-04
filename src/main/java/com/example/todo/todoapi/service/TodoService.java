@@ -1,11 +1,11 @@
-package com.example.todo.service;
+package com.example.todo.todoapi.service;
 
-import com.example.todo.dto.request.TodoCreateRequestDTO;
-import com.example.todo.dto.request.TodoModifyRequestDTO;
-import com.example.todo.dto.response.TodoDetailResponseDTO;
-import com.example.todo.dto.response.TodoListResponseDTO;
-import com.example.todo.entity.Todo;
-import com.example.todo.repository.TodoRepository;
+import com.example.todo.todoapi.dto.request.TodoCreateRequestDTO;
+import com.example.todo.todoapi.dto.request.TodoModifyRequestDTO;
+import com.example.todo.todoapi.dto.response.TodoDetailResponseDTO;
+import com.example.todo.todoapi.dto.response.TodoListResponseDTO;
+import com.example.todo.todoapi.entity.Todo;
+import com.example.todo.todoapi.repository.TodoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,6 +24,8 @@ public class TodoService {
 
     private final TodoRepository todoRepository;
 
+    
+    // 할 일 등록
     public TodoListResponseDTO create(TodoCreateRequestDTO requestDTO) throws Exception{
 
         todoRepository.save(requestDTO.toEntity());

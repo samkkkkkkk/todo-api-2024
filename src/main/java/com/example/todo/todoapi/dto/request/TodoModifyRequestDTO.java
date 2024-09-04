@@ -1,4 +1,4 @@
-package com.example.todo.dto.request;
+package com.example.todo.todoapi.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

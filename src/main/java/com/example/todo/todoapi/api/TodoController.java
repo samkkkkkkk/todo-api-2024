@@ -1,9 +1,9 @@
-package com.example.todo.api;
+package com.example.todo.todoapi.api;
 
-import com.example.todo.dto.request.TodoCreateRequestDTO;
-import com.example.todo.dto.request.TodoModifyRequestDTO;
-import com.example.todo.dto.response.TodoListResponseDTO;
-import com.example.todo.service.TodoService;
+import com.example.todo.todoapi.dto.request.TodoCreateRequestDTO;
+import com.example.todo.todoapi.dto.request.TodoModifyRequestDTO;
+import com.example.todo.todoapi.dto.response.TodoListResponseDTO;
+import com.example.todo.todoapi.service.TodoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +12,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.ResultSet;
 import java.util.List;
 
 @RestController
@@ -23,6 +22,8 @@ public class TodoController {
 
     private final TodoService todoService;
 
+    
+    // 할 일 등록 요청
     @PostMapping
     public ResponseEntity<?> createTodo(
             @Validated @RequestBody TodoCreateRequestDTO requestDTO,

@@ -1,6 +1,6 @@
-package com.example.todo.dto.response;
+package com.example.todo.todoapi.dto.response;
 
-import com.example.todo.entity.Todo;
+import com.example.todo.todoapi.entity.Todo;
 import lombok.*;
 
 import java.time.LocalDateTime;
