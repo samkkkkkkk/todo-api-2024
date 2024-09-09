@@ -1,4 +1,4 @@
-package com.example.todo.todoapi.api.config;
+package com.example.todo.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -2,6 +2,7 @@ package com.example.todo.userapi.api;
 
 import com.example.todo.userapi.dto.request.LoginRequestDTO;
 import com.example.todo.userapi.dto.request.UserSignupRequestDTO;
+import com.example.todo.userapi.dto.response.LoginResponseDTO;
 import com.example.todo.userapi.dto.response.UserSignupResponseDTO;
 import com.example.todo.userapi.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -78,9 +79,10 @@ public class UserController {
         if (response != null) return response;
 
         try {
-            String authenticate = userService.authenticate(dto);
-            return ResponseEntity.ok().body(authenticate);
+            LoginResponseDTO responseDTO = userService.authenticate(dto);
+            return ResponseEntity.ok().body(responseDTO);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest()
                     .body(e.getMessage());
         }
