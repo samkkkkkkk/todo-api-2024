@@ -45,6 +45,11 @@ dependencies {
 	// 소스 코드 변경시 자동으로 페이지 리로드 해주는 라이브러리
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+	// json web token 라이브러리
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
+	implementation 'io.jsonwebtoken:jjwt-impl:0.11.2'
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.11.2'
+
 	// 스프링 시큐리티 모듈
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
