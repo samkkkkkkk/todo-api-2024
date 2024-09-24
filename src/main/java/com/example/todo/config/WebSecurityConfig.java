@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -17,6 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // 자동 권한 검사를 컨트롤러의 메서드에서 전역적으로 수행하기 위한 설정.
 @RequiredArgsConstructor
 public class WebSecurityConfig {
 
@@ -38,14 +40,14 @@ public class WebSecurityConfig {
                 // jwtAuthFilter를 먼저 배치해서, 얘를 통과하면 인증이 완료가 되도록 처리
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                // '/api/todos'라는 요청이 post로 들어오고, Role 값이 ADMIN인 경우 권한 검사 없이 허용하겠다.
+                                authorizeRequests
+                                        // '/api/todos'라는 요청이 post로 들어오고, Role 값이 ADMIN인 경우 권한 검사 없이 허용하겠다.
 //                                .requestMatchers(HttpMethod.POST, "/api/todos").hasRole("ADMIN")
-                                // '/api/auth'로 시작하는 요청과 '/' 요청은 권한 검사 없이 허용하겠다.
-                                .requestMatchers("/", "/api/auth/**")
-                                .permitAll()
-                                // 위에서 따로 설정하지 않은 나머지 요청들은 권한 검사가 필요하다.
-                                .anyRequest().authenticated()
+                                        // '/api/auth'로 시작하는 요청과 '/' 요청은 권한 검사 없이 허용하겠다.
+                                        .requestMatchers("/", "/api/auth/**")
+                                        .permitAll()
+                                        // 위에서 따로 설정하지 않은 나머지 요청들은 권한 검사가 필요하다.
+                                        .anyRequest().authenticated()
 
                 );
 

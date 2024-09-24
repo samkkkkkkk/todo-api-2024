@@ -1,6 +1,7 @@
 package com.example.todo.todoapi.dto.request;
 
 import com.example.todo.todoapi.entity.Todo;
+import com.example.todo.userapi.entiy.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -21,9 +22,10 @@ public class TodoCreateRequestDTO {
 
 
     // DTO를 Entity로 변환
-    public Todo toEntity() {
+    public Todo toEntity(User user) {
         return Todo.builder()
                 .title(this.title)
+                .user(user)
                 .build();
     }
 

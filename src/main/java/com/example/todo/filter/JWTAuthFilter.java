@@ -51,7 +51,7 @@ public class JWTAuthFilter extends OncePerRequestFilter {
                 authorityList.add(new SimpleGrantedAuthority(tokenUserInfo.getRole().toString()));
 
                 // 인증 완료 처리
-                // spring security에게 이증정보를 전달해서 전역적으로 어플리케이션 내에서
+                // spring security에게 인증정보를 전달해서 전역적으로 어플리케이션 내에서
                 // 인증 정보를 활용할 수 있게 설정.
                 AbstractAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         tokenUserInfo, // 컨트롤러에서 활용할 유저 정보
@@ -90,7 +90,6 @@ public class JWTAuthFilter extends OncePerRequestFilter {
                 && bearerToken.startsWith("Bearer")) {
             return bearerToken.substring(7);
         }
-
         return null;
     }
 

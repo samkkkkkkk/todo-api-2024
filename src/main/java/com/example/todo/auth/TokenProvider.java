@@ -28,7 +28,7 @@ public class TokenProvider {
 
     /**
      * JSON Web Token을 생성하는 메서드
-     * @Param userEntity - 토큰의 내용(클레임)에 포함될 유저 정보
+     * @param userEntity - 토큰의 내용(클레임)에 포함될 유저 정보
      * @return - 생성된 JSON을 암호화 한 토큰값
      */
     public String createToken(User userEntity) {
@@ -61,11 +61,11 @@ public class TokenProvider {
                         SignatureAlgorithm.HS512
                 )
                 // token payload에 들어갈 클레임 설정
+                .setClaims(claims) // 추가 클레임을 먼저 설정해 주어야 한다.
                 .setIssuer("Todo운영자") // iss: 발급자 정보
                 .setIssuedAt(new java.util.Date())// iat: 발급 시간
                 .setExpiration(expiry) // exp: 만료 시간
                 .setSubject(userEntity.getId()) // sub: 토큰을 식별할 수 있는 주요 데이터
-                .setClaims(claims)
                 .compact();
 
     }
@@ -82,7 +82,7 @@ public class TokenProvider {
         Claims claims = Jwts.parserBuilder()
                 // 토큰 발급자의 발급 당시의 서명을 넣어줌.
                 .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
-                // 서명 위조 검사/: 위조된 경우에는 예외가 발생합니다.
+                // 서명 위조 검사: 위조된 경우에는 예외가 발생합니다.
                 // 위조가 되지 않은 경우 payload를 리턴
                 .build()
                 .parseClaimsJws(token)
@@ -97,4 +97,5 @@ public class TokenProvider {
                 .build();
 
     }
+
 }
