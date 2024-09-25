@@ -55,14 +55,9 @@ public class UserController {
         ResponseEntity<List<FieldError>> resultEntity = getFieldErrorResponseEntity(result);
         if (resultEntity != null) return resultEntity;
 
-        try {
-            UserSignupResponseDTO responseDTO = userService.create(requestDTO);
-            return ResponseEntity.ok()
-                    .body(responseDTO);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest()
-                    .body(e.getMessage());
-        }
+
+        UserSignupResponseDTO responseDTO = userService.create(requestDTO);
+        return ResponseEntity.ok().body(responseDTO);
 
     }
 
@@ -81,15 +76,9 @@ public class UserController {
         ResponseEntity<List<FieldError>> response = getFieldErrorResponseEntity(result);
         if (response != null) return response;
 
-        try {
-            LoginResponseDTO responseDTO = userService.authenticate(dto);
-            return ResponseEntity.ok().body(responseDTO);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest()
-                    .body(e.getMessage());
-        }
 
+        LoginResponseDTO responseDTO = userService.authenticate(dto);
+        return ResponseEntity.ok().body(responseDTO);
 
     }
 
@@ -97,12 +86,14 @@ public class UserController {
     @PutMapping("/promote")
     // 권한검사 (해당 권한이 아니라면 인가처리 거부 -> 403 상태 리턴)
     // 메서드 호출 전에 검사 -> 요청 당시 토큰에 있는 user 정보가 ROLE_COMMON 권한을가지고 있는지를 검사.
-    @PreAuthorize("hasRole('ROLE_COMMON)")
+    @PreAuthorize("hasRole('ROLE_COMMON')")
     public ResponseEntity<?> promote(
             @AuthenticationPrincipal TokenUserInfo userInfo
             ) {
         log.info("/api/auth/promote - PUT!");
-        return "";
+
+        LoginResponseDTO responseDTO = userService.promoteToPremium(userInfo);
+        return ResponseEntity.ok().body(responseDTO);
 
     }
 

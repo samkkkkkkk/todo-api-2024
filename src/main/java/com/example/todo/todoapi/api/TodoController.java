@@ -40,18 +40,10 @@ public class TodoController {
         ResponseEntity<List<FieldError>> validatedResult = getValidatedResult(result);
         if (validatedResult != null) return validatedResult;
 
-        try {
-            TodoListResponseDTO responseDTO = todoService.create(requestDTO, userInfo.getUserId());
 
-            return ResponseEntity.ok().body(responseDTO);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError()
-                    .body(TodoListResponseDTO
-                            .builder()
-                            .error(e.getMessage())
-                            .build());
-        }
+        TodoListResponseDTO responseDTO = todoService.create(requestDTO, userInfo.getUserId());
+        return ResponseEntity.ok().body(responseDTO);
+
 
     }
 
@@ -62,16 +54,9 @@ public class TodoController {
     ) {
 
         log.info("/api/todos - GET! 요청이 들어옴");
-        try {
-            TodoListResponseDTO responseDTO = todoService.retrieve(userInfo.getUserId());
-            return ResponseEntity.ok().body(responseDTO);
-        } catch (Exception e) {
-            return ResponseEntity
-                    .internalServerError()
-                    .body(TodoListResponseDTO.builder()
-                            .error(e.getMessage())
-                            .build());
-        }
+
+        TodoListResponseDTO responseDTO = todoService.retrieve(userInfo.getUserId());
+        return ResponseEntity.ok().body(responseDTO);
 
     }
 
@@ -87,12 +72,8 @@ public class TodoController {
             return ResponseEntity.badRequest().body("ID를 전달 해주세요.");
         }
 
-        try {
-            TodoListResponseDTO responseDTO = todoService.delete(todoId, userInfo.getUserId());
-            return ResponseEntity.ok().body(responseDTO);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        TodoListResponseDTO responseDTO = todoService.delete(todoId, userInfo.getUserId());
+        return ResponseEntity.ok().body(responseDTO);
 
     }
 
@@ -105,17 +86,12 @@ public class TodoController {
             BindingResult result
     ) {
         ResponseEntity<List<FieldError>> validatedResult = getValidatedResult(result);
-        if(validatedResult != null) return validatedResult;
+        if (validatedResult != null) return validatedResult;
 
-        try {
-            return ResponseEntity.ok().body(todoService.update(requestDTO, userInfo.getUserId()));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body(e.getMessage());
-        }
+
+        return ResponseEntity.ok().body(todoService.update(requestDTO, userInfo.getUserId()));
 
     }
-
 
 
     // 입력값 검증(Validation)의 결과를 처리해 주는 전역 메서드
@@ -131,8 +107,6 @@ public class TodoController {
         }
         return null;
     }
-
-
 
 
 }
