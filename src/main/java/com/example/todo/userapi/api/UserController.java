@@ -155,6 +155,12 @@ public class UserController {
 
     }
 
+    @GetMapping("/kakaologin")
+    public ResponseEntity<?> kakaologin(@RequestParam String code) {
+        log.info("api/auth/kakaoLogin - GET! code: {}", code);
+        userService.kakaoService(code);
+    }
+
     private MediaType findExtensionAndGetMediaType(String filePath) {
 
         // 파일 경롱세ㅓ 확장자 추출
