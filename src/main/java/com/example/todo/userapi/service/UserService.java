@@ -12,9 +12,15 @@ import com.example.todo.userapi.entiy.User;
 import com.example.todo.userapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -24,6 +30,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
+
+    @Value("${upload.path}")
+    private String uploadRootPath;
 
 // 이메일 중복 확인
     public boolean isDuplicated(String email) {
@@ -37,7 +46,7 @@ public class UserService {
 
 
     // 회원가입
-    public UserSignupResponseDTO create(final UserSignupRequestDTO requestDTO){
+    public UserSignupResponseDTO create(final UserSignupRequestDTO requestDTO, final String uploadedFilePath){
 
         String email = requestDTO.getEmail();
         if (isDuplicated(email)) {
@@ -49,7 +58,7 @@ public class UserService {
         requestDTO.setPassword(encoded);
 
         // DTO를 Entity로 변환하여 insert진행
-        User saved = userRepository.save(requestDTO.toEntity());
+        User saved = userRepository.save(requestDTO.toEntity(uploadedFilePath));
         log.info("회원가입이 정상적으로 수행됨! - saved user: {}", saved);
 
         // 생성자를 통해 Entity를 DTO로 변경하여 Controller에 리턴
@@ -99,6 +108,36 @@ public class UserService {
 
         return new LoginResponseDTO(saved, token);
 
+
+    }
+
+    /**
+     * 업로드 된 파일을 서버에 저장하고 저장 경로를 리턴
+     * @param profileImage
+     * @return 실제로 지정된 이미지 경로
+     */
+    public String uploadProfileImage(MultipartFile profileImage) throws IOException {
+        // 루트 디렉토리가 실존하는 지 확인 후 존재하지 않으면 생성.
+        File rootDir = new File(uploadRootPath);
+        if (!rootDir.exists()) rootDir.mkdirs();
+
+        // 파일명을 유니크하게 변경 (이름 충돌 가능성을 대비)
+        // UUID와 원본 파일명을 결함 -> 규칙은 없음
+        String uniqueFileName
+                = UUID.randomUUID() + "_" + profileImage.getOriginalFilename();
+
+        // 파일을 저장
+        File uploadFile = new File(uploadRootPath + "/" + uniqueFileName);
+        profileImage.transferTo(uploadFile);
+
+        return uniqueFileName;
+
+    }
+
+    public String findProfilePath(String userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException());
+        // DB에는 파일명만 저장. -> service가 가지고 있는 Root Path와 연결해서 리턴
+        return uploadRootPath + "/" + user.getProfileImg();
 
     }
 }
