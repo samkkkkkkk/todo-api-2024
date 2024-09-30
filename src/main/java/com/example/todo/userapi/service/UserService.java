@@ -5,6 +5,7 @@ import com.example.todo.auth.TokenUserInfo;
 import com.example.todo.exception.NoRegisteredArgumentException;
 import com.example.todo.userapi.dto.request.LoginRequestDTO;
 import com.example.todo.userapi.dto.request.UserSignupRequestDTO;
+import com.example.todo.userapi.dto.response.KakaoUserDTO;
 import com.example.todo.userapi.dto.response.LoginResponseDTO;
 import com.example.todo.userapi.dto.response.UserSignupResponseDTO;
 import com.example.todo.userapi.entiy.Role;
@@ -13,13 +14,21 @@ import com.example.todo.userapi.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -149,7 +158,96 @@ public class UserService {
 
     }
 
-    public void kakaoService(String code) {
+    public String kakaoService(String code) {
+        // 인가 코드를 통해 토큰을 발급받기
+        String accessToken = getKakaoAccessToken(code);
+        log.info("token: {}", accessToken);
+
+        // 토큰을 통해 사용자 정보를 가져오기
+        KakaoUserDTO userDto = getKakaoUserInfo(accessToken);
+
+        // 일회성 로그인으로 처리 -> dto로 바로 화면단에 처리
+        // 회원가입 처리 -> 이메일 중복 검사 진행 -> 자체 jwt 생성해서 토큰을 화면단에 리턴.
+        // -> 화면단에서는 적적한 url을 선택하여 redirect를 진행.
+
+
+    }
+
+    private KakaoUserDTO getKakaoUserInfo(String accessToken) {
+
+        // 1. 요청 url
+        String requestUri = "https://kapi.kakao.com/v2/user/me";
+
+        // 요청 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer " + accessToken);
+        headers.add("Content-type","application/x-www-form-urlencoded;charset=utf-8");
+
+        // 요청 보내기
+        RestTemplate template = new RestTemplate();
+        ResponseEntity<KakaoUserDTO> responseEntity
+                = template.exchange(requestUri, HttpMethod.POST, new HttpEntity<>(headers), KakaoUserDTO.class);
+
+        // 응답 바디 꺼내기
+        KakaoUserDTO responseData = responseEntity.getBody();
+        log.info("user profile: {}", responseData);
+
+        return responseData;
+    }
+
+    private String getKakaoAccessToken(String code) {
+
+        // 요청 url
+        String requestUri = "https://kauth.kakao.com/oauth/token";
+
+        // 요청 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-type", "application/x-www-form-urlencoded;charset=utf-8");
+
+        // 요청 바디(파라미터) 설정
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("grant_type", "authorization_code"); // 카카오 공식 문서 기준 값으로 세팅
+        params.add("client_id", KAKAO_CLIENT_ID); // 카카오 디벨로퍼 REST API 키
+        params.add("redirect_uri", KAKAO_REDIERCT_URI); // 카카오 디베로퍼에 등록된 redirect uri
+        params.add("code", code); // 프론트에서 인가 코드 요청시 받은 코드
+        params.add("client_secret", KAKAO_CLIENT_SECRET); // 카카오 디벨로퍼 client secret(활성화 시 추가해 줘야 함)
+
+        // 헤더와 바디 정보를 합치기 위해 HttpEntity 객체 생성
+        HttpEntity<Object> requestEntity = new HttpEntity<>(params, headers);
+
+        // 카카오 서버로 POST 통신
+        RestTemplate template = new RestTemplate();
+
+
+        // 통신을 보내면서 응답 데이터를 리턴
+        // param1: 요청 url
+        // param2: 요청 메서드 (전송 방식)
+        // param3: 헤더와 요청 파라미터정보 엔터티
+        // param4: 응답 데이터를 받을 객체의 타입 (ex: dto, map)
+        // 만약 구조가 복잡한 경우에는 응답 데이터 타입을 String으로 받아서 JSON-simple 라이브러리로 직접 해체.
+        ResponseEntity<Map> responseEntity
+                = template.exchange(requestUri, HttpMethod.POST, requestEntity, Map.class);
+
+        /*
+                        HTTP/1.1 200 OK
+            Content-Type: application/json;charset=UTF-8
+            {
+                "token_type":"bearer",
+                "access_token":"${ACCESS_TOKEN}",
+                "expires_in":43199,
+                "refresh_token":"${REFRESH_TOKEN}",
+                "refresh_token_expires_in":5184000,
+                "scope":"account_email profile"
+            }
+         */
+
+        // 응답 데이터에서 필요한 정보를 가져오기
+        Map<String, Object> responseData = (Map<String, Object>) responseEntity.getBody();
+        log.info("토큰 요청 응답 데이터: {}", responseData);
+
+        // 여러가지 데이터 중 access_token이라는 이름의 데이터를 리턴
+        // Object 타입을 String으로 형 변환해서 리턴.
+        return (String)responseData.get("access_token");
 
     }
 }

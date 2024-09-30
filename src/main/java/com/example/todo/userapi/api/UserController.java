@@ -159,6 +159,8 @@ public class UserController {
     public ResponseEntity<?> kakaologin(@RequestParam String code) {
         log.info("api/auth/kakaoLogin - GET! code: {}", code);
         userService.kakaoService(code);
+
+
     }
 
     private MediaType findExtensionAndGetMediaType(String filePath) {
