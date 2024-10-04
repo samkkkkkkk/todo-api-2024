@@ -1,7 +1,10 @@
 package com.example.todo.config;
 
+import com.example.todo.exception.CustomAuthenticationEntryPoint;
 import com.example.todo.filter.JWTAuthFilter;
+import com.example.todo.filter.JwtExceptionFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.CustomAutowireConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -23,6 +26,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
 
     private final JWTAuthFilter jwtAuthFilter;
+    private final JwtExceptionFilter jwtExceptionFilter;
 
     // 시큐리티 기본 설정 (권한처리, 초기 로그인 화면 없애기 ...)
     @Bean // 라이브러리 클래스 같은 내가 만들지않은 객체를 등록해서 주입받기 위한 아노테이션.
@@ -39,6 +43,10 @@ public class WebSecurityConfig {
                 // security를 사용하면, 서버가 가동될 때 기본적으로 제공하는 여러가지 필터가 세팅이 되는데,
                 // jwtAuthFilter를 먼저 배치해서, 얘를 통과하면 인증이 완료가 되도록 처리
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                // Exception Filter를 Auth Filter 앞에 배치를 하겠다는 뜻.
+                // 예외 처리만을 전담하는 필터를 생성해서, 예외가 발생하는 필터 앞단에 배치하면, 발생된 예외가
+                // 먼저 버치된 필터로 넘어가서 처리가 가능하게 됩니다.
+                .addFilterBefore(jwtExceptionFilter, JWTAuthFilter.class)
                 .authorizeHttpRequests(authorizeRequests ->
                                 authorizeRequests
                                         // '/api/todos'라는 요청이 post로 들어오고, Role 값이 ADMIN인 경우 권한 검사 없이 허용하겠다.
@@ -54,6 +62,10 @@ public class WebSecurityConfig {
                                         .anyRequest().authenticated()
 
                 );
+//                .exceptionHandling(ExceptionHandling -> {
+//                    // 인증 과정에서 예외가 발생한 경우 예외를 전달한다.
+//                    ExceptionHandling.authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+//                })
 
         return http.build();
     }

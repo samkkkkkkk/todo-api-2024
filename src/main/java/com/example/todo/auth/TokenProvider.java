@@ -34,7 +34,7 @@ public class TokenProvider {
     public String createToken(User userEntity) {
         // 토큰 만료시간 생성
         java.util.Date expiry = Date.from(
-                Instant.now().plus(1, ChronoUnit.DAYS)
+                Instant.now().plus(30, ChronoUnit.SECONDS)
         );
 
         // 토큰 생성

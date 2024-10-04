@@ -2,6 +2,7 @@ package com.example.todo.filter;
 
 import com.example.todo.auth.TokenProvider;
 import com.example.todo.auth.TokenUserInfo;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +36,6 @@ public class JWTAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        try {
             String token = parseBearerToken(request);
             log.info("JWT Token Filter is running... - token: {}", token);
 
@@ -67,10 +67,6 @@ public class JWTAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.info("서명이 일치하지 않습니다! 토큰이 위조 되었습니다.");
-        }
 
         // 필터 체인에 내가 만든 필터 실행 명령
         filterChain.doFilter(request, response);

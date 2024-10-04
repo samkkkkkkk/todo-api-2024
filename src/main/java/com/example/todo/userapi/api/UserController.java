@@ -176,12 +176,13 @@ public class UserController {
         log.info("/api/auth/logout: {}", userInfo.getEmail());
 
         String result = userService.logout(userInfo);
+
         return ResponseEntity.ok().body(result);
     }
 
     private MediaType findExtensionAndGetMediaType(String filePath) {
 
-        // 파일 경롱세ㅓ 확장자 추출
+        // 파일 경로에서 확장자 추출
         // C://todo_upload/sfdsnklf_sdf.jpg
         String ext
                 = filePath.substring(filePath.lastIndexOf(".") + 1);
