@@ -26,15 +26,18 @@ public class TokenProvider {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
+    @Value("${jwt.refresh_secret}")
+    private String REFRESH_SECRET_KEY;
+
     /**
      * JSON Web Token을 생성하는 메서드
      * @param userEntity - 토큰의 내용(클레임)에 포함될 유저 정보
      * @return - 생성된 JSON을 암호화 한 토큰값
      */
-    public String createToken(User userEntity) {
+    public String createToken(User userEntity, String secretKey, long duration, ChronoUnit unit) {
         // 토큰 만료시간 생성
         java.util.Date expiry = Date.from(
-                Instant.now().plus(30, ChronoUnit.SECONDS)
+                Instant.now().plus(duration, unit)
         );
 
         // 토큰 생성
@@ -57,7 +60,7 @@ public class TokenProvider {
         return Jwts.builder()
                 // token Header에 들어갈 서명
                 .signWith(
-                        Keys.hmacShaKeyFor(SECRET_KEY.getBytes()),
+                        Keys.hmacShaKeyFor(secretKey.getBytes()),
                         SignatureAlgorithm.HS512
                 )
                 // token payload에 들어갈 클레임 설정
@@ -70,6 +73,27 @@ public class TokenProvider {
 
     }
 
+    public String createAccessKey(User userEntity) {
+        return createToken(userEntity, SECRET_KEY, 30, ChronoUnit.SECONDS);
+    }
+
+    public String createRefreshKey(User userEntity) {
+        return createToken(userEntity, REFRESH_SECRET_KEY, 10, ChronoUnit.MINUTES);
+    }
+
+
+    // 토큰에서 클레임을 추출하는 로직을 분리
+    private Claims getClaims(String token, String secretKey) {
+        Claims claims = Jwts.parserBuilder()
+                // 토큰 발급자의 발급 당시의 서명을 넣어줌.
+                .setSigningKey(Keys.hmacShaKeyFor(secretKey.getBytes()))
+                // 서명 위조 검사: 위조된 경우에는 예외가 발생합니다.
+                // 위조가 되지 않은 경우 payload를 리턴
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims;
+    }
 
     /**
      * 클라이언트가 전송한 토큰을 디코딩하여 토큰의 위조 여부를 확인
@@ -79,14 +103,7 @@ public class TokenProvider {
      * @return - 토큰 안에 있는 인증된 정보를 반환
      */
     public TokenUserInfo validateAndGetTokenUserInfo(String token) {
-        Claims claims = Jwts.parserBuilder()
-                // 토큰 발급자의 발급 당시의 서명을 넣어줌.
-                .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes()))
-                // 서명 위조 검사: 위조된 경우에는 예외가 발생합니다.
-                // 위조가 되지 않은 경우 payload를 리턴
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+        Claims claims = getClaims(token, SECRET_KEY);
 
         log.info("claims: {}", claims);
 
@@ -97,5 +114,17 @@ public class TokenProvider {
                 .build();
 
     }
+
+    // refresh token의 유효성을 검사합니다.
+    public Boolean validateRefreshToken(String token) {
+        try {
+            getClaims(token, REFRESH_SECRET_KEY);
+            return true;
+        } catch (Exception e) {
+            log.warn("유효하지 않은 리프레시 토큰");
+            return false;
+        }
+    }
+
 
 }

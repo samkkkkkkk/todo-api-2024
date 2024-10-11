@@ -66,9 +66,6 @@ public class JWTAuthFilter extends OncePerRequestFilter {
                 // 스프링 시크리터 컨테이너에 인증 정보 객체를 등록
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
-            } else {
-                // token이 진짜 null이거나 문자열 null인 경우
-                throw new IllegalArgumentException();
             }
 
         // 필터 체인에 내가 만든 필터 실행 명령
