@@ -1,6 +1,6 @@
 package com.example.todo.userapi.dto.request;
 
-import com.example.todo.userapi.entiy.User;
+import com.example.todo.userapi.entity.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;

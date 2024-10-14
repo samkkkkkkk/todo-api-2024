@@ -1,6 +1,6 @@
 package com.example.todo.auth;
 
-import com.example.todo.userapi.entiy.Role;
+import com.example.todo.userapi.entity.Role;
 import lombok.*;
 
 @Getter @ToString

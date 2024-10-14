@@ -1,6 +1,6 @@
 package com.example.todo.todoapi.entity;
 
-import com.example.todo.userapi.entiy.User;
+import com.example.todo.userapi.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

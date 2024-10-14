@@ -1,12 +1,11 @@
 package com.example.todo.userapi.dto.response;
 
-import com.example.todo.userapi.entiy.Role;
-import com.example.todo.userapi.entiy.User;
+import com.example.todo.userapi.entity.Role;
+import com.example.todo.userapi.entity.User;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Map;
 
 // 로그인 성공 후 클라이언트에게 전송할 데이터 객체

@@ -1,4 +1,4 @@
-package com.example.todo.userapi.entiy;
+package com.example.todo.userapi.entity;
 
 public enum Role {
     COMMON, PREMIUM, ADMIN
