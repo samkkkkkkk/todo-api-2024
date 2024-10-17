@@ -1,7 +1,6 @@
 package com.example.todo.filter;
 
 import com.example.todo.exception.ErrorCode;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -39,6 +38,8 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
         } catch (IllegalArgumentException e) {
             log.warn("토큰이 전달되지 않음!");
             setErrorResponse(response, ErrorCode.INVALID_AUTH);
+        } catch (Exception e) {
+            log.warn("알 수 없는 예외 발생!");
         }
     }
 
@@ -48,7 +49,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 
         //Map 생성 및 데이터 추가
         Map<String, Object> responsMap = new HashMap<>();
-        responsMap.put("message", errorCode.getMassage());
+        responsMap.put("message", errorCode.toString());
         responsMap.put("code", errorCode.getHttpStatus());
 
         // Map을 JSON 문자열로 변환

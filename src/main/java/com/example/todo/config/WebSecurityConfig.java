@@ -4,7 +4,8 @@ import com.example.todo.exception.CustomAuthenticationEntryPoint;
 import com.example.todo.filter.JWTAuthFilter;
 import com.example.todo.filter.JwtExceptionFilter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.CustomAutowireConfigurer;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -20,6 +21,11 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
+import java.util.List;
+
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity // 자동 권한 검사를 컨트롤러의 메서드에서 전역적으로 수행하기 위한 설정.
@@ -31,9 +37,20 @@ public class WebSecurityConfig {
     private final CustomAuthenticationEntryPoint entryPoint;
     private final AccessDeniedHandler accessDeniedHandler;
 
+    @Value("${security.permit-all-patterns}")
+    private List<String> permitAllPatterns;
+
+
     // 시큐리티 기본 설정 (권한처리, 초기 로그인 화면 없애기 ...)
     @Bean // 라이브러리 클래스 같은 내가 만들지않은 객체를 등록해서 주입받기 위한 아노테이션.
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//        for (String permitAllPattern : permitAllPatterns) log.info("허용 url: {}", permitAllPattern);
+
+//        log.info("배열로 변환한 url: {}", Arrays.toString(permitAllPatterns.toArray()).split(", "));
+
+        // yml에서 가져온 허용 url리스트를 jwtAuthFilter에게 전달.
+        jwtAuthFilter.setPermitAllPatterns(permitAllPatterns);
+
         http.csrf(csrfConfig -> csrfConfig.disable()) // CSRF 토큰 공격을 방지하기 위한 장치 해제.
                 .cors(Customizer.withDefaults())
                 // 세션 관리 상태를 STATELESS로 설정해서 spring security가 제공하는 세션 생성 및 관리 기능 사용하지 않겠다.
@@ -60,7 +77,7 @@ public class WebSecurityConfig {
                                         .authenticated()
                                         .requestMatchers("/api/auth/load-profile").authenticated()
                                         // '/api/auth'로 시작하는 요청과 '/' 요청은 권한 검사 없이 허용하겠다.
-                                        .requestMatchers("/", "/api/auth/**")
+                                        .requestMatchers(Arrays.toString(permitAllPatterns.toArray()).split(", "))
                                         .permitAll()
                                         // 위에서 따로 설정하지 않은 나머지 요청들은 권한 검사가 필요하다.
                                         .anyRequest().authenticated()
