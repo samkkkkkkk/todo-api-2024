@@ -2,6 +2,7 @@ package com.example.todo.userapi.service;
 
 import com.example.todo.auth.TokenProvider;
 import com.example.todo.auth.TokenUserInfo;
+import com.example.todo.aws.S3Service;
 import com.example.todo.exception.NoRegisteredArgumentException;
 import com.example.todo.userapi.dto.request.LoginRequestDTO;
 import com.example.todo.userapi.dto.request.UserSignupRequestDTO;
@@ -41,6 +42,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
+    private final S3Service s3Service;
 
     @Value("${upload.path}")
     private String uploadRootPath;
@@ -153,9 +155,9 @@ public class UserService {
      * @return 실제로 지정된 이미지 경로
      */
     public String uploadProfileImage(MultipartFile profileImage) throws IOException {
-        // 루트 디렉토리가 실존하는 지 확인 후 존재하지 않으면 생성.
-        File rootDir = new File(uploadRootPath);
-        if (!rootDir.exists()) rootDir.mkdirs();
+//        // 루트 디렉토리가 실존하는 지 확인 후 존재하지 않으면 생성.
+//        File rootDir = new File(uploadRootPath);
+//        if (!rootDir.exists()) rootDir.mkdirs();
 
         // 파일명을 유니크하게 변경 (이름 충돌 가능성을 대비)
         // UUID와 원본 파일명을 결함 -> 규칙은 없음
@@ -163,21 +165,23 @@ public class UserService {
                 = UUID.randomUUID() + "_" + profileImage.getOriginalFilename();
 
         // 파일을 저장
-        File uploadFile = new File(uploadRootPath + "/" + uniqueFileName);
-        profileImage.transferTo(uploadFile);
+//        File uploadFile = new File(uploadRootPath + "/" + uniqueFileName);
+//        profileImage.transferTo(uploadFile);
 
-        return uniqueFileName;
+        return s3Service.uploadToS3Bucket(profileImage.getBytes(), uniqueFileName);
 
     }
 
+    // 파일경로 생성
     public String findProfilePath(String userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException());
-        String profileImage = user.getProfileImg();
-        if (profileImage.startsWith("http://")) {
-            return profileImage;
-        }
-        // DB에는 파일명만 저장. -> service가 가지고 있는 Root Path와 연결해서 리턴
-        return uploadRootPath + "/" + user.getProfileImg();
+        return user.getProfileImg();
+
+//        if (profileImage.startsWith("http://")) {
+//            return profileImage;
+//        }
+//        // DB에는 파일명만 저장. -> service가 가지고 있는 Root Path와 연결해서 리턴
+//        return uploadRootPath + "/" + user.getProfileImg();
 
     }
 
@@ -289,25 +293,23 @@ public class UserService {
     }
 
     public String logout(TokenUserInfo userInfo) {
-        User foundUser = userRepository.findById(userInfo.getUserId()).orElseThrow();
+        User foundUser = userRepository.findById(userInfo.getUserId())
+                .orElseThrow();
 
         String accessToken = foundUser.getAccessToken();
-
-        // accessToken이 null이 아니라면 카카오 로그인을 한 사용자
-        if(accessToken != null) {
+        // accessToken이 null이 아니라면 카카오 로그인을 한 애겠지?
+        if (accessToken != null) {
             String reqURI = "https://kapi.kakao.com/v1/user/logout";
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer " + accessToken);
 
             ResponseEntity<String> responseData
                     = new RestTemplate().exchange(reqURI, HttpMethod.POST, new HttpEntity<>(headers), String.class);
-
             foundUser.changeAccessToken(null);
             userRepository.save(foundUser);
 
             return responseData.getBody();
         }
-
         return null;
     }
 
