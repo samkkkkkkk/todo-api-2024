@@ -76,7 +76,7 @@ public class TokenProvider {
     }
 
     public String createRefreshKey(User userEntity) {
-        return createToken(userEntity, REFRESH_SECRET_KEY, 2, ChronoUnit.MONTHS);
+        return createToken(userEntity, REFRESH_SECRET_KEY, 86400, ChronoUnit.MINUTES);
     }
 
     // 토큰에서 클레임을 추출하는 로직을 분리했습니다.
